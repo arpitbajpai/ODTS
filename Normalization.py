@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from datetime import date
-from pandas import DataFrame
+
 
 #Reason, Handling it at the database side was too much overhead. Moreover the queries were complex 
 #and it takes a lot of time to customize those queries for a particular requirement. Also the mongodb
@@ -52,9 +52,10 @@ def sample_data(df,interval_in_min):
     elif(interval_in_min==15):
          df = df.resample('15T').mean(); #modify this method to perform integration
     #add more conditions
+    return df;
 
         
-def fetch_results(db,document_name,start_timestamp,end_timestamp,containerId,interval_in_min):
+def fetch_results(db,document_name,start_timestamp,end_timestamp,container_id,interval_in_min):
     """Method Description: Function to fetch Raw data from ODTS 
     Parameters
     ----------
@@ -77,7 +78,7 @@ def fetch_results(db,document_name,start_timestamp,end_timestamp,containerId,int
     Supplied in minute format. Frequency conversion and Resampling of time series.
     """
     col = db[document_name];
-    cursor = col.find({"containerid":containerId , 
+    cursor = col.find({"containerid":container_id , 
                        "timestamp": 
                            {"$gte" : start_timestamp, 
                             "$lte" : end_timestamp 
@@ -86,24 +87,13 @@ def fetch_results(db,document_name,start_timestamp,end_timestamp,containerId,int
     df = pd.DataFrame(list(cursor))
     df['timestamp'] = pd.to_datetime(df['timestamp'],unit='ms')
     df = df.set_index(['timestamp'])  
+    df=sample_data(df,interval_in_min);
     return df;
     
 
-def generate_csv(df,file_name):
-    """Method Description: Method to generate CSV file for resampled data
-    Parameters
-    ----------
-    file_name : String
-    Name of the output CSV file.
-    
-    df : DataFrame
-    dataframe containing resampled data for a specified period.
-    """
-    df.to_csv('/Users/Arpit/desktop/sampleddata.csv',sep=',', encoding='utf-8')
+#db=establish_connection("mongodb://192.168.21.240","fortiss");
+#df= fetch_results(db,"DoubleEvents",1502186455000,1502272855000,"36","1")
 
-   
-db=establish_connection("mongodb://192.168.21.240","fortiss");
-df= fetch_results(db,"DoubleEvents",1497530178000,1501504578000,"36","1")
 
 
 
