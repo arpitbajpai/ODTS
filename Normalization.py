@@ -12,29 +12,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from datetime import date
+import gviz_api
 
-
-#Reason, Handling it at the database side was too much overhead. Moreover the queries were complex 
-#and it takes a lot of time to customize those queries for a particular requirement. Also the mongodb
-#aggregation profile is not as flexible as pandas library provided by python, therefore, it makes much
-#more sense to retrieve the results first and then handle it according to the client requirements.
- 
-def establish_connection(url,database):
-    """Method Description: Establishing the connection with ODTS system
-    Parameters
-    ----------
-    url : String
-    URL to ODTS Mongodb server.
-    
-    database: String
-    Database name from where information is retrieved.
-    """
-    client = MongoClient()
-    client = MongoClient(url) #mongodb://192.168.21.240
-    db = client[database];    #db = client['fortiss']
-    return db;
-
- 
 def sample_data(df,interval_in_min):
     """Method Description: Samping of data based on specified interval
     Parameters
@@ -87,13 +66,19 @@ def fetch_results(db,document_name,start_timestamp,end_timestamp,container_id,in
     df = pd.DataFrame(list(cursor))
     df['timestamp'] = pd.to_datetime(df['timestamp'],unit='ms')
     df = df.set_index(['timestamp'])  
+    df = df.drop('maxAbsError', 1)
     df=sample_data(df,interval_in_min);
+    
     return df;
     
 
+#Testing Purpose
 #db=establish_connection("mongodb://192.168.21.240","fortiss");
-#df= fetch_results(db,"DoubleEvents",1502186455000,1502272855000,"36","1")
-
+#df= fetch_results(db,"DoubleEvents",1497530178000,1501504578000,"36",60)
+#generate_googlechart_jsonresponse(df);
+#df1.reset_index(inplace=True)
+#print(df.to_json(orient='index'))
+#df.columns = range(df.shape[1]) # to remove column header
 
 
 
