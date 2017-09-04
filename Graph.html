@@ -1,0 +1,59 @@
+<html>
+   <head> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+     <script>
+      function getTasks() {
+          var text = document.getElementsByName('container_id')[0].value;
+  //alert(text);
+        $.get('http://localhost:5000/ODTS/api/normalizelasthourjsondatatable?containerId='+text+'&interval=15',
+          function(data){
+           // alert("Data Loaded: " + data);
+            google.charts.setOnLoadCallback(drawChart(data));  
+          });
+    }
+
+      // Load the Visualization API and the corechart package.
+      google.charts.load('current', {'packages':['corechart']});
+
+     function drawChart(data) {
+        var options = {
+          title: 'consumption',
+          
+          hAxis: {
+            
+          title: 'Time of Day',
+          format: 'h:mm a',
+            gridlines: {count: 15}
+          },
+          vAxis: {
+           // gridlines: {color: 'blue'},
+           // minValue: 0
+          }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        //var array  = JSON.parse(data);
+        //alert(data);
+
+        var dataTableData = new google.visualization.DataTable(data);
+        //alert(dataTableData);
+
+        chart.draw(dataTableData,options);
+
+      
+      }
+    </script>
+
+
+   </head>
+   <body>
+      <div id="chart_div"></div>
+     <!--  <button onload="javascript:getTasks();">Show Match</button> -->
+   </body>
+</html>
+
+<form>
+  ContainerId: <input type="text" name="container_id" value="143"><br>
+  <input id="clickMe" type="button" value="Submit" onclick="getTasks()" />
+ </form>

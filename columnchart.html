@@ -1,0 +1,62 @@
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script type="text/javascript">
+
+//window.onload =  getTasks()
+
+
+function getTasks() {
+  //alert((document.getElementById("start").value).getUnixTime());
+  var startTimestamp = new Date(document.getElementById("start").value).getTime()
+  var endTimestamp =  new Date(document.getElementById("end").value).getTime()
+  var text = document.getElementsByName('container_id')[0].value;
+  
+          
+       // $.get('http://localhost:5000/ODTS/api/normalizelasthourjsondatatable?containerId='+text+'&interval=1',
+          $.get('http://localhost:5000/ODTS/api/normalizejsondatatable?start='+startTimestamp+'&end='+endTimestamp+'&containerId='+text+'&interval=1440',
+          function(data){
+           // alert("Data Loaded: " + data);
+            google.charts.setOnLoadCallback(drawTrendlines(data));  
+          });
+    }
+
+google.charts.load('current', {packages: ['corechart', 'bar']});
+
+
+
+function drawTrendlines(data) {
+
+      var options = {
+        title: 'Energy consumption for container id',
+        trendlines: {
+          0: {type: 'linear', lineWidth: 5, opacity: .3},
+          1: {type: 'exponential', lineWidth: 10, opacity: .3}
+        },
+        hAxis: {
+         format: 'M/d/yy',
+
+          // viewWindow: {
+          //   min: [7, 30, 0],
+          //   max: [17, 30, 0]
+          // }
+        },
+        vAxis: {
+          title: 'Consumption'
+        }
+      };
+
+      var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+      var dataTableData = new google.visualization.DataTable(data);
+      chart.draw(dataTableData, options);
+    }
+  </script>
+ <div id="chart_div"></div>
+
+ <form>
+  ContainerId: <input type="text" name="container_id" value="143"><br>
+  Start Date: <input type="date" id="start"> <br>
+  End Date: <input type="date" id="end"><br>
+  <input id="clickMe" type="button" value="Submit" onclick="getTasks()" />
+
+
+ </form>

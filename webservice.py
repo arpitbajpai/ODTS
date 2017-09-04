@@ -11,12 +11,15 @@ from flask import Flask
 from flask import make_response,request
 from normalization import fetch_results
 from database_connection import establish_connection
-from pymongo import MongoClient
-from pandas import DataFrame, read_csv
-import pandas as pd
 import gviz_api
+import datetime
 
 app = Flask(__name__)
+
+
+def TimestampMillisec64():
+    return int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds() * 1000) 
+
 
 def get_dataframe():
 	"""Method Description: Utility method to establish connection with the database and extract results based on the request parameters 
@@ -74,10 +77,7 @@ def generate_datatable_response(df):
 	data_table = gviz_api.DataTable(description)
 	data_table.LoadData(df.values)
 	print ("Content-type: text/plain")
-	#return data_table.ToJSon(columns_order=("timestamp", "value"),
-	 #                           order_by="timestamp")
 	response = data_table.ToJSon();
-	#return data_table;
 	return response;
 
 @app.route('/')
@@ -146,7 +146,7 @@ def generate_googlechart_jsonresponse():
 	"""Method Description: Resource to generate JSON(suitable for consumption in google charts) requested by the user.
 	User supplies the startdate, enddate, containerId and sampling interval in request link 
 	and the response is generated in json datatable format.
-	Example: example : http://localhost:5000/ODTS/api/normalize?start=1497530178000&end=1501504578000&containerId=36&interval=15
+	Example: example : http://localhost:5000/ODTS/api/normalizejsondatatable?start=1497530178000&end=1501504578000&containerId=36&interval=15
 	Request Parameters
 	----------
 	start: Timestamp
@@ -163,6 +163,34 @@ def generate_googlechart_jsonresponse():
 	"""
 	df =get_dataframe();
 	return generate_datatable_response(df);
+
+@app.route('/ODTS/api/normalizelasthourjsondatatable', methods=['GET'])
+def generate_googlechart_lasthour_jsonresponse():
+	"""Method Description: Resource to generate JSON(suitable for consumption in google charts) requested by the user.
+	User supplies the startdate, enddate, containerId and sampling interval in request link 
+	and the response is generated in json datatable format.
+	Example: example : http://localhost:5000/ODTS/api/normalize?start=1497530178000&end=1501504578000&containerId=36&interval=15
+	Request Parameters
+	----------
+	start: Timestamp
+	Timestamp in epochs for a specified starting date.
+	
+	end: Timestamp
+	Timestamp in epochs for a specified ending date.
+	
+	containerId: Number
+	Differentiates between different devices
+	
+	interval: number
+	Supplied in minute format. Frequency conversion and Resampling of time series.
+	"""
+	start_timestamp = ((TimestampMillisec64())-3600000);
+	end_timestamp = TimestampMillisec64();
+	container_id = request.args.get('containerId');
+	interval_in_mins = request.args.get('interval');
+	db= establish_connection("mongodb://192.168.21.240","fortiss");
+	dataframe= fetch_results(db,"DoubleEvents",int(start_timestamp),int(end_timestamp),container_id,int(interval_in_mins));
+	return generate_datatable_response(dataframe); #change the timestamps at this level for current time zone
 
 
 if __name__ == '__main__':
