@@ -1,0 +1,82 @@
+1) Install Ethereum and geth
+2) geth console
+
+Create private blockchain:
+	
+	1) Create a genesis block
+
+					{
+		    "config": {
+		        "chainId": 15,
+		        "homesteadBlock": 0,
+		        "eip155Block": 0,
+		        "eip158Block": 0
+		    },
+		    "difficulty": "0x400",
+		    "gasLimit": "0x2100000",
+		    "alloc": {
+		         
+		    }
+		}
+
+	2) Execute
+
+		geth --identity "MyTestNetNode" --nodiscover --networkid 1999 --datadir /Users/Arpit/Desktop/blockchain/datadir  init /Users/Arpit/Desktop/blockchain/genesis.json
+
+	3) Creating an account on the private tesnet
+
+		geth account new --datadir /Users/Arpit/Desktop/blockchain/datadir 
+		Provide password for this account : 
+
+	This will create an account on your fresh testnet node, and will return the private testnet address like:
+		{0xcf16c1c53a2597403a6efd19f58ff635de031a6e}
+
+	4) Interact with geth console
+
+		geth --identity "MyTestNetNode" --datadir /Users/Arpit/Desktop/blockchain/datadir --nodiscover --networkid 1999 console
+
+	5) Get Balance
+
+		eth.getBalance("0xcf16c1c53a2597403a6efd19f58ff635de031a6e")
+
+	6) Mine Ethers 
+
+		miner.start();
+
+
+Private blockchain deployed in current node. (that adress can be found by: admin.nodeInfo.NodeUrl)
+
+Ask other peers to use the address to connect to this block chain.
+		admin.addPeer("YOURNODEURL")
+
+Connection of other nodes: 
+
+	1) Install metamask
+
+		Change the geth settings
+		Geth needs to have a special CORS setting enabled to allow MetaMask to connect to it by default, so try starting it with this command:
+		
+		geth  --rpc --rpccorsdomain="chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn" --identity "MyTestNetNode" --datadir /Users/Arpit/Desktop/blockchain/datadir --nodiscover --networkid 1999 console
+
+	2) Connect to private network using metamask
+
+		Create a metamask account
+
+Adding Peer to private blockchain:
+	
+	 1) Save the privatekey in local file
+	 2) geth "MyTestNetNode"  account import /Users/Arpit/downloads/MetaMaskKey.txt 
+
+Send ethers:
+		
+		personal.unlockAccount( "0xcf16c1c53a2597403a6efd19f58ff635de031a6e","arpit")
+
+		var sender = "0xcf16c1c53a2597403a6efd19f58ff635de031a6e";
+		var receiver = "0x86159525cc9925C4AB56af54e1Ecbd7fB79DE0D8"
+
+		var amount = web3.toWei(1, "ether")
+		eth.sendTransaction({from:sender, to:receiver, value: amount})
+
+The transaction won't work until you have the mining node to validate the transactions.
+
+geth --mine --rpc --networkid 1999 --datadir /Users/Arpit/Desktop/blockchain/datadir
